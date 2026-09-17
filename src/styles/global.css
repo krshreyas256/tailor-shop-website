@@ -1,23 +1,54 @@
-* {
+/* =========================
+   RESET
+   ========================= */
+
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+
+/* =========================
+   ROOT / DOCUMENT
+   ========================= */
+
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 80px;
 }
 
 body {
-  font-family: Arial, sans-serif;
+  min-width: 320px;
+
+  background-color: #faf8f4;
+  color: #2f241c;
+
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
   line-height: 1.6;
-  background-color: #ffffff;
-  color: #222222;
+
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+
+/* =========================
+   COMMON ELEMENTS
+   ========================= */
+
+img,
+picture,
+svg,
+video {
+  display: block;
+  max-width: 100%;
 }
 
 img {
-  max-width: 100%;
-  display: block;
+  height: auto;
 }
 
 button,
@@ -27,7 +58,337 @@ select {
   font: inherit;
 }
 
+button {
+  cursor: pointer;
+}
+
 a {
-  text-decoration: none;
   color: inherit;
+  text-decoration: none;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+
+/* =========================
+   ACCESSIBILITY
+   ========================= */
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #9a6a3a;
+  outline-offset: 3px;
+}
+
+
+/* =========================
+   COMMON CONTAINER
+   ========================= */
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+
+  margin: 0 auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+
+/* =========================
+   COMMON SECTION
+   ========================= */
+
+.section {
+  width: 100%;
+  padding: 90px 0;
+}
+
+
+/* =========================
+   ALTERNATING SECTION
+   ========================= */
+
+.section-light {
+  background-color: #faf8f4;
+}
+
+.section-cream {
+  background-color: #f3ece2;
+}
+
+
+/* =========================
+   SECTION HEADER
+   ========================= */
+
+.section-header {
+  max-width: 700px;
+
+  margin: 0 auto 50px;
+
+  text-align: center;
+}
+
+.section-subtitle {
+  margin-bottom: 10px;
+
+  color: #9a6a3a;
+
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+}
+
+.section-title {
+  margin-bottom: 16px;
+
+  color: #2f241c;
+
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.section-description {
+  color: #6f6258;
+
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+
+/* =========================
+   COMMON BUTTON
+   ========================= */
+
+.btn {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height: 48px;
+
+  padding: 0 24px;
+
+  border: 1px solid transparent;
+  border-radius: 3px;
+
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  text-align: center;
+
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  background-color: #9a6a3a;
+  color: #ffffff;
+
+  box-shadow: 0 8px 20px rgba(70, 45, 25, 0.12);
+}
+
+.btn-primary:hover {
+  background-color: #82562e;
+  box-shadow: 0 10px 24px rgba(70, 45, 25, 0.18);
+}
+
+.btn-outline {
+  border-color: #b99a79;
+  color: #704a2a;
+  background-color: transparent;
+}
+
+.btn-outline:hover {
+  background-color: #9a6a3a;
+  border-color: #9a6a3a;
+  color: #ffffff;
+}
+
+
+/* =========================
+   FORM ELEMENTS
+   ========================= */
+
+input,
+textarea,
+select {
+  width: 100%;
+
+  border: 1px solid #d9cdbf;
+  border-radius: 3px;
+
+  background-color: #ffffff;
+  color: #2f241c;
+
+  padding: 12px 14px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #9a6a3a;
+
+  box-shadow:
+    0 0 0 3px rgba(154, 106, 58, 0.1);
+}
+
+textarea {
+  min-height: 130px;
+  resize: vertical;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9b9087;
+}
+
+
+/* =========================
+   UTILITIES
+   ========================= */
+
+.text-center {
+  text-align: center;
+}
+
+.hidden {
+  display: none;
+}
+
+
+/* =========================
+   TABLET
+   ========================= */
+
+@media (max-width: 900px) {
+  .container {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .section {
+    padding: 75px 0;
+  }
+
+  .section-header {
+    margin-bottom: 40px;
+  }
+}
+
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media (max-width: 768px) {
+  html {
+    scroll-padding-top: 70px;
+  }
+
+  body {
+    font-size: 15px;
+  }
+
+  .container {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .section {
+    padding: 60px 0;
+  }
+
+  .section-header {
+    margin-bottom: 35px;
+  }
+
+  .section-title {
+    font-size: clamp(1.8rem, 8vw, 2.4rem);
+  }
+
+  .section-description {
+    font-size: 0.95rem;
+  }
+
+  .btn {
+    min-height: 48px;
+    padding: 0 20px;
+  }
+}
+
+
+/* =========================
+   SMALL PHONES
+   ========================= */
+
+@media (max-width: 400px) {
+  .container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .section {
+    padding: 50px 0;
+  }
+
+  .section-header {
+    margin-bottom: 30px;
+  }
+
+  .section-title {
+    font-size: 1.8rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
+
+
+/* =========================
+   REDUCED MOTION
+   ========================= */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

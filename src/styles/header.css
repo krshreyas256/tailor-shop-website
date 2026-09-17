@@ -1,0 +1,294 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  width: 100%;
+
+  background-color: #f3ece2;
+  border-bottom: 1px solid #e4d8ca;
+}
+
+.header-container {
+  width: 100%;
+  max-width: 1200px;
+  height: 76px;
+
+  margin: 0 auto;
+  padding: 0 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+
+/* =========================
+   LOGO
+   ========================= */
+
+.logo {
+  color: #5f3e22;
+
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+
+  white-space: nowrap;
+
+  transition: color 0.2s ease;
+}
+
+.logo:hover {
+  color: #9a6a3a;
+}
+
+
+/* =========================
+   NAVIGATION
+   ========================= */
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.nav a {
+  position: relative;
+
+  color: #4b3b2e;
+
+  font-size: 0.95rem;
+  font-weight: 500;
+
+  white-space: nowrap;
+
+  transition: color 0.2s ease;
+}
+
+.nav a::after {
+  content: '';
+
+  position: absolute;
+  left: 0;
+  bottom: -7px;
+
+  width: 0;
+  height: 2px;
+
+  background-color: #9a6a3a;
+
+  transition: width 0.25s ease;
+}
+
+.nav a:hover {
+  color: #9a6a3a;
+}
+
+.nav a:hover::after {
+  width: 100%;
+}
+
+
+/* =========================
+   MOBILE MENU BUTTON
+   ========================= */
+
+.menu-toggle {
+  display: none;
+
+  width: 42px;
+  height: 42px;
+
+  padding: 8px;
+
+  border: none;
+  background: transparent;
+
+  cursor: pointer;
+
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  gap: 5px;
+}
+
+.menu-toggle span {
+  display: block;
+
+  width: 24px;
+  height: 2px;
+
+  background-color: #5f3e22;
+
+  transition:
+    transform 0.3s ease,
+    opacity 0.2s ease;
+}
+
+
+/* Hamburger → X */
+
+.menu-toggle.active span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-toggle.active span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+
+/* =========================
+   TABLET
+   ========================= */
+
+@media (max-width: 1000px) {
+  .header-container {
+    padding: 0 20px;
+  }
+
+  .nav {
+    gap: 20px;
+  }
+
+  .nav a {
+    font-size: 0.9rem;
+  }
+}
+
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media (max-width: 768px) {
+  .header-container {
+    height: 68px;
+    padding: 0 20px;
+  }
+
+  .logo {
+    font-size: 1.3rem;
+  }
+
+  .menu-toggle {
+    display: flex;
+  }
+
+  .nav {
+    position: absolute;
+    top: 68px;
+    left: 0;
+
+    width: 100%;
+
+    padding: 0 20px;
+
+    background-color: #f3ece2;
+    border-bottom: 1px solid #e4d8ca;
+
+    box-shadow: 0 8px 20px rgba(60, 40, 25, 0.08);
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+
+    /* Closed state */
+    max-height: 0;
+    overflow: hidden;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transform: translateY(-10px);
+
+    transition:
+      max-height 0.4s ease,
+      opacity 0.3s ease,
+      transform 0.3s ease,
+      visibility 0.3s ease,
+      padding 0.3s ease;
+  }
+
+  /* Open state */
+
+  .nav.nav-open {
+    max-height: 500px;
+
+    padding-top: 10px;
+    padding-bottom: 10px;
+
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+
+    transform: translateY(0);
+  }
+
+  .nav a {
+    width: 100%;
+
+    padding: 13px 0;
+
+    color: #4b3b2e;
+
+    font-size: 1rem;
+
+    border-bottom: 1px solid rgba(95, 62, 34, 0.1);
+
+    transition:
+      color 0.2s ease,
+      padding-left 0.2s ease;
+  }
+
+  .nav a:last-child {
+    border-bottom: none;
+  }
+
+  .nav a:hover {
+    color: #9a6a3a;
+    padding-left: 5px;
+  }
+
+  .nav a::after {
+    display: none;
+  }
+}
+
+
+/* =========================
+   SMALL PHONES
+   ========================= */
+
+@media (max-width: 400px) {
+  .header-container {
+    padding: 0 16px;
+  }
+
+  .logo {
+    font-size: 1.2rem;
+  }
+
+  .menu-toggle {
+    width: 40px;
+    height: 40px;
+  }
+
+  .nav {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .nav.nav-open {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+}

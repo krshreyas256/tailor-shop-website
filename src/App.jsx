@@ -1,8 +1,18 @@
+import Header from './components/layout/Header';
+import Footer from './components/layout/Footer';
+import Hero from './sections/Hero';
+
 function App() {
   return (
-    <div>
-      <h1>Tailor Shop</h1>
-    </div>
+    <>
+      <Header />
+
+      <main>
+        <Hero />
+      </main>
+
+      <Footer />
+    </>
   );
 }
 

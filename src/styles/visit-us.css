@@ -25,9 +25,9 @@
 
 .visit-info {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
 
-  max-width: 950px;
+  max-width: 1100px;
 
   margin: 0 auto 35px;
 
@@ -43,7 +43,7 @@
 
   min-height: 145px;
 
-  padding: 24px 30px;
+  padding: 24px 20px;
 
   text-align: center;
 }
@@ -115,10 +115,37 @@
 
 
 /* =========================
+   ADDRESS MAP LINK
+   ========================= */
+
+.visit-text-link {
+  display: inline-block;
+
+  margin-top: 8px;
+
+  color: #82562e;
+
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  text-decoration: underline;
+  text-underline-offset: 3px;
+
+  transition: color 0.2s ease;
+}
+
+.visit-text-link:hover {
+  color: #6f4725;
+}
+
+
+/* =========================
    MAP
    ========================= */
 
 .visit-map {
+  position: relative;
+
   width: 100%;
   height: 360px;
 
@@ -130,13 +157,31 @@
   border-radius: 8px;
 
   background-color: #e9dfd2;
+
+  /*
+   * Allow Google Maps to receive
+   * touch gestures on mobile.
+   */
+  touch-action: auto;
 }
 
 .visit-map iframe {
+  display: block;
+
+  position: relative;
+
+  z-index: 1;
+
   width: 100%;
   height: 100%;
 
   border: 0;
+
+  /*
+   * Allow interaction with the
+   * embedded Google Maps controls.
+   */
+  touch-action: auto;
 }
 
 
@@ -385,6 +430,32 @@
 
 
 /* =========================
+   TABLET
+   ========================= */
+
+@media (max-width: 1000px) {
+  .visit-info {
+    grid-template-columns: repeat(2, 1fr);
+
+    max-width: 700px;
+  }
+
+  .visit-info-item:nth-child(3) {
+    border-top: 1px solid #e0d5c9;
+    border-left: none;
+  }
+
+  .visit-info-item:nth-child(4) {
+    border-top: 1px solid #e0d5c9;
+  }
+
+  .visit-info-item:nth-child(even) {
+    border-left: 1px solid #e0d5c9;
+  }
+}
+
+
+/* =========================
    MOBILE
    ========================= */
 
@@ -396,6 +467,8 @@
   .visit-info {
     grid-template-columns: 1fr;
 
+    max-width: 100%;
+
     margin-bottom: 25px;
   }
 
@@ -405,9 +478,13 @@
     padding: 22px 20px;
   }
 
+  .visit-info-item:nth-child(n) {
+    border-top: none;
+    border-left: none;
+  }
+
   .visit-info-item + .visit-info-item {
     border-top: 1px solid #e0d5c9;
-    border-left: none;
   }
 
   .visit-map {
@@ -416,6 +493,12 @@
     margin-bottom: 50px;
 
     border-radius: 6px;
+
+    touch-action: auto;
+  }
+
+  .visit-map iframe {
+    touch-action: auto;
   }
 
   .visit-request {
@@ -459,6 +542,12 @@
 
   .visit-map {
     height: 260px;
+
+    touch-action: auto;
+  }
+
+  .visit-map iframe {
+    touch-action: auto;
   }
 
   .visit-form {

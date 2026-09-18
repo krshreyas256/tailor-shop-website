@@ -128,8 +128,21 @@ function VisitUs() {
             <span className="visit-info-label">Address</span>
 
             <p>
-              Opposite to Jr. College Kambadakone
+              Opposite to Jr. College,
+              <br />
+              Khambadakone, Kergal
+              <br />
+              Karnataka 576219
             </p>
+
+            <a
+              href="https://maps.app.goo.gl/5y5rhcHXHi5KbDmbA"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="visit-text-link"
+            >
+              View on Google Maps
+            </a>
           </div>
 
           <div className="visit-info-item">
@@ -156,12 +169,23 @@ function VisitUs() {
             </a>
           </div>
 
+          <div className="visit-info-item">
+            <span className="visit-info-label">Email</span>
+
+            <a
+              href="mailto:prematailor25@gmail.com"
+              className="visit-action-button"
+            >
+              Mail Us
+            </a>
+          </div>
+
         </div>
 
         <div className="visit-map">
           <iframe
             title="Prema Tailoring & Design location"
-            src="https://www.google.com/maps?q=Opposite%20to%20Jr.%20College%20Kambadakone&output=embed"
+            src="https://www.google.com/maps?q=13.808156,74.636527&z=17&output=embed"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           ></iframe>

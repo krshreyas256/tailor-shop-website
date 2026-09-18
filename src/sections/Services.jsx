@@ -41,7 +41,7 @@ function Services() {
           <p className="section-subtitle">Our Services</p>
 
           <h2 className="section-title">
-            What we Offer
+            What We Offer
           </h2>
 
           <p className="section-description">

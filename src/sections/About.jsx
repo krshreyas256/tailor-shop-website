@@ -13,11 +13,13 @@ function About() {
             Made to Fit.
           </h2>
 
-          <p className="section-description">
+          <p className="section-description about-intro">
             Every garment is thoughtfully stitched with attention
             to detail, comfort, and personal style.
           </p>
         </div>
+
+        <div className="about-divider"></div>
 
         <div className="about-text">
           <p>

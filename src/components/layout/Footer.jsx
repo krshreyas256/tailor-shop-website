@@ -8,7 +8,7 @@ function Footer() {
       <div className="footer-container">
 
         <div className="footer-brand">
-          <h2>Prema Tailor</h2>
+          <h2>Prema Tailoring & Design</h2>
           <p>
             Crafted with care, stitched to fit.
           </p>
@@ -27,7 +27,7 @@ function Footer() {
 
       <div className="footer-bottom">
         <p>
-          © {currentYear} Prema Tailor. All rights reserved.
+          © {currentYear} Prema Tailoring & Design. All rights reserved.
         </p>
       </div>
     </footer>

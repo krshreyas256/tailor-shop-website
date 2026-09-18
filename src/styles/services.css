@@ -1,0 +1,160 @@
+/* =========================
+   SERVICES
+   ========================= */
+
+.services {
+  background-color: #f3ece2;
+}
+
+.services-grid {
+  display: grid;
+
+  grid-template-columns: repeat(4, 1fr);
+
+  gap: 20px;
+}
+
+
+/* =========================
+   SERVICE CARD
+   ========================= */
+
+.service-card {
+  overflow: hidden;
+
+  background-color: #ffffff;
+
+  border: 1px solid #e5d9cb;
+  border-radius: 6px;
+
+  box-shadow: 0 8px 25px rgba(70, 45, 25, 0.05);
+
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+
+  box-shadow:
+    0 14px 35px rgba(70, 45, 25, 0.1);
+}
+
+
+/* =========================
+   IMAGE
+   ========================= */
+
+.service-card-image-wrapper {
+  width: 100%;
+  height: 230px;
+
+  overflow: hidden;
+
+  background-color: #e9dfd2;
+}
+
+.service-card-image {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  transition: transform 0.5s ease;
+}
+
+.service-card:hover .service-card-image {
+  transform: scale(1.04);
+}
+
+
+/* =========================
+   CONTENT
+   ========================= */
+
+.service-card-content {
+  padding: 24px 22px 26px;
+}
+
+.service-card-content h3 {
+  margin-bottom: 9px;
+
+  color: #2f241c;
+
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.service-card-content p {
+  color: #71645a;
+
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+
+/* =========================
+   TABLET
+   ========================= */
+
+@media (max-width: 1000px) {
+  .services-grid {
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 20px;
+  }
+
+  .service-card-image-wrapper {
+    height: 260px;
+  }
+}
+
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media (max-width: 600px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+
+    gap: 18px;
+  }
+
+  .service-card-image-wrapper {
+    height: 260px;
+  }
+
+  .service-card-content {
+    padding: 22px 20px 24px;
+  }
+}
+
+
+/* =========================
+   SMALL PHONES
+   ========================= */
+
+@media (max-width: 400px) {
+  .services-grid {
+    gap: 16px;
+  }
+
+  .service-card-image-wrapper {
+    height: 230px;
+  }
+
+  .service-card-content {
+    padding: 20px 18px 22px;
+  }
+
+  .service-card-content h3 {
+    font-size: 1.05rem;
+  }
+
+  .service-card-content p {
+    font-size: 0.87rem;
+  }
+}

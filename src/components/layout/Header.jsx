@@ -22,7 +22,7 @@ function Header() {
       <div className="header-container">
 
         <a href="#home" className="logo">
-          Prema Tailor
+          Prema Tailoring & Design
         </a>
 
         <nav className={`nav ${menuOpen ? 'nav-open' : ''}`}>

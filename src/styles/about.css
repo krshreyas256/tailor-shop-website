@@ -1,0 +1,150 @@
+/* =========================
+   ABOUT
+   ========================= */
+
+.about {
+  background-color: #faf8f4;
+}
+
+.about-content {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  align-items: center;
+
+  gap: 70px;
+}
+
+
+/* =========================
+   IMAGE
+   ========================= */
+
+.about-image-wrapper {
+  width: 100%;
+  height: 500px;
+
+  overflow: hidden;
+
+  border-radius: 8px;
+
+  background-color: #e9dfd2;
+}
+
+.about-image {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  transition: transform 0.5s ease;
+}
+
+.about-image-wrapper:hover .about-image {
+  transform: scale(1.03);
+}
+
+
+/* =========================
+   TEXT
+   ========================= */
+
+.about-text {
+  max-width: 520px;
+}
+
+.about-text .section-title {
+  margin-bottom: 24px;
+
+  text-align: left;
+}
+
+.about-text .section-subtitle {
+  margin-bottom: 12px;
+}
+
+.about-text p:not(.section-subtitle) {
+  margin-bottom: 18px;
+
+  color: #6f6258;
+
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.about-text p:last-child {
+  margin-bottom: 0;
+}
+
+
+/* =========================
+   TABLET
+   ========================= */
+
+@media (max-width: 900px) {
+  .about-content {
+    gap: 40px;
+  }
+
+  .about-image-wrapper {
+    height: 440px;
+  }
+}
+
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media (max-width: 768px) {
+  .about-content {
+    grid-template-columns: 1fr;
+
+    gap: 35px;
+  }
+
+  .about-image-wrapper {
+    height: 400px;
+  }
+
+  .about-text {
+    max-width: 100%;
+
+    text-align: center;
+  }
+
+  .about-text .section-title {
+    text-align: center;
+  }
+
+  .about-text .section-subtitle {
+    margin-bottom: 10px;
+  }
+
+  .about-text p:not(.section-subtitle) {
+    font-size: 0.95rem;
+    line-height: 1.75;
+  }
+}
+
+
+/* =========================
+   SMALL PHONES
+   ========================= */
+
+@media (max-width: 400px) {
+  .about-content {
+    gap: 28px;
+  }
+
+  .about-image-wrapper {
+    height: 340px;
+
+    border-radius: 6px;
+  }
+
+  .about-text p:not(.section-subtitle) {
+    font-size: 0.9rem;
+  }
+}

@@ -6,23 +6,12 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="footer-container">
-
         <div className="footer-brand">
           <h2>Prema Tailoring & Design</h2>
           <p>
             Crafted with care, stitched to fit.
           </p>
         </div>
-
-        <div className="footer-links">
-          <a href="#home">Home</a>
-          <a href="#services">Services</a>
-          <a href="#gallery">Gallery</a>
-          <a href="#about">About</a>
-          <a href="#custom-design">Custom Design</a>
-          <a href="#visit-us">Visit Us</a>
-        </div>
-
       </div>
 
       <div className="footer-bottom">

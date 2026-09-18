@@ -6,6 +6,7 @@ import Services from './sections/Services';
 import Gallery from './sections/Gallery';
 import About from './sections/About';
 import CustomDesign from './sections/CustomDesign';
+import VisitUs from './sections/VisitUs';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Gallery />
         <About />
         <CustomDesign />
+        <VisitUs />
       </main>
 
       <Footer />

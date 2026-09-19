@@ -1,34 +1,35 @@
 import ServiceCard from '../components/ui/ServiceCard';
 import '../styles/services.css';
 
+import blouseStitchingImage from '../assets/blouse-stitching.png';
+import dressStitchingImage from '../assets/dress-stitching.png';
+import uniformStitchingImage from '../assets/uniform-stitching.png';
+import customTailoringImage from '../assets/custom-tailoring.png';
+
 const services = [
   {
     title: 'Blouse Stitching',
     description:
       'Custom blouse stitching designed according to your style and requirements.',
-    image:
-      'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=800&q=80',
+    image: blouseStitchingImage,
   },
   {
     title: 'Dress Stitching',
     description:
       'Well-fitted dresses crafted with attention to detail and finishing.',
-    image:
-      'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=800&q=80',
+    image: dressStitchingImage,
   },
   {
     title: 'Uniform Stitching',
     description:
       'Comfortable and neatly finished uniforms tailored to your requirements.',
-    image:
-      'https://images.unsplash.com/photo-1571945153237-4929e783af4a?auto=format&fit=crop&w=800&q=80',
+    image: uniformStitchingImage,
   },
   {
     title: 'Custom Tailoring',
     description:
       'Personalized stitching for garments based on your preferred design and fit.',
-    image:
-      'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=800&q=80',
+    image: customTailoringImage,
   },
 ];
 

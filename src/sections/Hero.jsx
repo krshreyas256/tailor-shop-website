@@ -1,5 +1,7 @@
 import '../styles/hero.css';
 
+import heroImage from '../assets/hero.png';
+
 function Hero() {
   const whatsappNumber = '918792931352';
   const whatsappMessage = encodeURIComponent(
@@ -45,7 +47,7 @@ function Hero() {
 
         <div className="hero-image-wrapper">
           <img
-            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1200&q=85"
+            src={heroImage}
             alt="Tailoring and garment craftsmanship"
             className="hero-image"
           />

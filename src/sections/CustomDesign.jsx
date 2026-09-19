@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import '../styles/custom-design.css';
 
+import {
+  addDocument,
+  COLLECTIONS,
+} from '../firebase/firestore';
+
 function CustomDesign() {
   const [formData, setFormData] = useState({
     name: '',
@@ -12,6 +17,7 @@ function CustomDesign() {
 
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (event) => {
     const { name, value, files } = event.target;
@@ -51,26 +57,45 @@ function CustomDesign() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
-    console.log('Custom design request:', formData);
+    setSubmitting(true);
+    setSubmitted(false);
 
-    setSubmitted(true);
+    try {
+      await addDocument(COLLECTIONS.CUSTOM_DESIGN_REQUESTS, {
+        name: formData.name.trim(),
+        phone: formData.phone.trim(),
+        garmentType: formData.garmentType,
+        description: formData.description.trim(),
+        status: 'New',
+      });
 
-    setFormData({
-      name: '',
-      phone: '',
-      garmentType: '',
-      description: '',
-      referenceImage: null,
-    });
+      setSubmitted(true);
 
-    event.target.reset();
+      setFormData({
+        name: '',
+        phone: '',
+        garmentType: '',
+        description: '',
+        referenceImage: null,
+      });
+
+      event.target.reset();
+    } catch (error) {
+      console.error('Custom design request error:', error);
+
+      setErrors({
+        submit: 'Something went wrong. Please try again.',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -210,14 +235,22 @@ function CustomDesign() {
                 />
               </div>
 
+              {errors.submit && (
+                <p className="form-error">{errors.submit}</p>
+              )}
+
               {submitted && (
                 <div className="form-success">
                   Thank you! Your request has been submitted.
                 </div>
               )}
 
-              <button type="submit" className="custom-design-submit">
-                Submit Request
+              <button
+                type="submit"
+                className="custom-design-submit"
+                disabled={submitting}
+              >
+                {submitting ? 'Submitting...' : 'Submit Request'}
               </button>
             </form>
           </div>

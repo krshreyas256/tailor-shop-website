@@ -1,3 +1,5 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 
@@ -8,7 +10,11 @@ import About from './sections/About';
 import CustomDesign from './sections/CustomDesign';
 import VisitUs from './sections/VisitUs';
 
-function App() {
+import AdminLogin from './admin/AdminLogin';
+import AdminDashboard from './admin/AdminDashboard';
+import ProtectedRoute from './admin/ProtectedRoute';
+
+function PublicHome() {
   return (
     <>
       <Header />
@@ -24,6 +30,29 @@ function App() {
 
       <Footer />
     </>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+
+        <Route path="/" element={<PublicHome />} />
+
+        <Route path="/admin/login" element={<AdminLogin />} />
+
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+      </Routes>
+    </BrowserRouter>
   );
 }
 

@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import '../styles/visit-us.css';
 
+import {
+  addDocument,
+  COLLECTIONS,
+} from '../firebase/firestore';
+
 function VisitUs() {
   const [formData, setFormData] = useState({
     name: '',
@@ -13,6 +18,7 @@ function VisitUs() {
 
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -45,9 +51,20 @@ function VisitUs() {
     setErrors((prev) => ({
       ...prev,
       [name]: '',
+      submit: '',
     }));
 
     setSubmitted(false);
+  };
+
+  const handleDateClick = (event) => {
+    if (typeof event.currentTarget.showPicker === 'function') {
+      event.currentTarget.showPicker();
+    }
+  };
+
+  const preventDateTyping = (event) => {
+    event.preventDefault();
   };
 
   const validateForm = () => {
@@ -69,6 +86,18 @@ function VisitUs() {
 
     if (!formData.date) {
       newErrors.date = 'Please select a preferred date.';
+    } else {
+      const selectedDate = new Date(`${formData.date}T00:00:00`);
+      const todayDate = new Date();
+
+      todayDate.setHours(0, 0, 0, 0);
+
+      if (Number.isNaN(selectedDate.getTime())) {
+        newErrors.date = 'Please select a valid date.';
+      } else if (selectedDate < todayDate) {
+        newErrors.date =
+          'Please select today or a future date.';
+      }
     }
 
     if (!formData.time) {
@@ -80,27 +109,48 @@ function VisitUs() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
-    console.log('Visit request:', formData);
+    setSubmitting(true);
+    setSubmitted(false);
 
-    setSubmitted(true);
+    try {
+      await addDocument(COLLECTIONS.VISIT_REQUESTS, {
+        name: formData.name.trim(),
+        phone: formData.phone.trim(),
+        service: formData.service,
+        preferredDate: formData.date,
+        preferredTime: formData.time,
+        message: formData.message.trim(),
+        status: 'New',
+      });
 
-    setFormData({
-      name: '',
-      phone: '',
-      service: '',
-      date: '',
-      time: '',
-      message: '',
-    });
+      setSubmitted(true);
 
-    event.target.reset();
+      setFormData({
+        name: '',
+        phone: '',
+        service: '',
+        date: '',
+        time: '',
+        message: '',
+      });
+
+      event.target.reset();
+    } catch (error) {
+      console.error('Visit request error:', error);
+
+      setErrors({
+        submit: 'Something went wrong. Please try again.',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -279,6 +329,7 @@ function VisitUs() {
               </div>
 
               <div className="visit-form-row">
+
                 <div className="form-group">
                   <label htmlFor="visit-date">
                     Preferred Date <span>*</span>
@@ -290,7 +341,12 @@ function VisitUs() {
                     name="date"
                     value={formData.date}
                     onChange={handleChange}
+                    onClick={handleDateClick}
+                    onKeyDown={preventDateTyping}
+                    onPaste={preventDateTyping}
+                    onDrop={preventDateTyping}
                     min={today}
+                    autoComplete="off"
                   />
 
                   {errors.date && (
@@ -322,6 +378,7 @@ function VisitUs() {
                     <p className="form-error">{errors.time}</p>
                   )}
                 </div>
+
               </div>
 
               <div className="form-group">
@@ -340,6 +397,10 @@ function VisitUs() {
                 />
               </div>
 
+              {errors.submit && (
+                <p className="form-error">{errors.submit}</p>
+              )}
+
               {submitted && (
                 <div className="form-success">
                   Thank you! Your visit request has been submitted.
@@ -349,8 +410,9 @@ function VisitUs() {
               <button
                 type="submit"
                 className="visit-submit"
+                disabled={submitting}
               >
-                Request a Visit
+                {submitting ? 'Submitting...' : 'Request a Visit'}
               </button>
             </form>
           </div>

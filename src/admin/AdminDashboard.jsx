@@ -1,15 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
   getDocuments,
+  subscribeToDocuments,
   updateDocument,
   deleteDocument,
   COLLECTIONS,
 } from '../firebase/firestore';
 
 import { logoutAdmin } from '../firebase/auth';
-
 import AdminGallery from './AdminGallery';
 
 import '../styles/admin.css';
@@ -25,6 +25,18 @@ function AdminDashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
 
+  const [newRequest, setNewRequest] = useState(null);
+
+  const [browserNotificationPermission, setBrowserNotificationPermission] =
+    useState('default');
+
+
+  /*
+   * ========================================
+   * LOAD REQUESTS + GALLERY
+   * ========================================
+   */
+
   const loadRequests = async (isRefresh = false) => {
     try {
       if (isRefresh) {
@@ -36,20 +48,20 @@ function AdminDashboard() {
       setError('');
 
       const [
-        customData,
-        visitData,
-        galleryData,
+        customDesignDocuments,
+        visitDocuments,
+        galleryDocuments,
       ] = await Promise.all([
         getDocuments(COLLECTIONS.CUSTOM_DESIGN_REQUESTS),
         getDocuments(COLLECTIONS.VISIT_REQUESTS),
         getDocuments(COLLECTIONS.GALLERY),
       ]);
 
-      setCustomRequests(customData);
-      setVisitRequests(visitData);
-      setGalleryItems(galleryData);
+      setCustomRequests(customDesignDocuments);
+      setVisitRequests(visitDocuments);
+      setGalleryItems(galleryDocuments);
     } catch (error) {
-      console.error('Dashboard loading error:', error);
+      console.error('Admin dashboard loading error:', error);
       setError('Unable to load dashboard data.');
     } finally {
       setLoading(false);
@@ -57,55 +69,305 @@ function AdminDashboard() {
     }
   };
 
+
+  /*
+   * ========================================
+   * INITIAL LOAD
+   * ========================================
+   */
+
   useEffect(() => {
     loadRequests();
   }, []);
 
-  const handleLogout = async () => {
+
+  /*
+   * ========================================
+   * CHECK BROWSER NOTIFICATION SUPPORT
+   * ========================================
+   */
+
+  useEffect(() => {
+    if (!('Notification' in window)) {
+      return;
+    }
+
+    setBrowserNotificationPermission(
+      Notification.permission
+    );
+  }, []);
+
+
+  /*
+   * ========================================
+   * REAL-TIME REQUEST LISTENERS
+   * ========================================
+   */
+
+  useEffect(() => {
+    let customListenerReady = false;
+    let visitListenerReady = false;
+
+    const knownCustomRequestIds = new Set();
+    const knownVisitRequestIds = new Set();
+
+    const unsubscribeCustom = subscribeToDocuments(
+      COLLECTIONS.CUSTOM_DESIGN_REQUESTS,
+      (documents) => {
+        /*
+         * The first snapshot establishes the existing
+         * requests. They should not trigger notifications.
+         */
+        if (!customListenerReady) {
+          documents.forEach((document) => {
+            knownCustomRequestIds.add(document.id);
+          });
+
+          customListenerReady = true;
+          setCustomRequests(documents);
+
+          return;
+        }
+
+        /*
+         * Find a genuinely new request.
+         */
+        const newlyAddedRequest = documents.find(
+          (document) =>
+            !knownCustomRequestIds.has(document.id)
+        );
+
+        /*
+         * Keep known IDs up to date.
+         */
+        documents.forEach((document) => {
+          knownCustomRequestIds.add(document.id);
+        });
+
+        setCustomRequests(documents);
+
+        if (newlyAddedRequest) {
+          setNewRequest({
+            type: 'Custom Design Request',
+            data: newlyAddedRequest,
+          });
+
+          showBrowserNotification(
+            'Custom Design Request',
+            newlyAddedRequest
+          );
+        }
+      },
+      (error) => {
+        console.error(
+          'Custom design real-time listener error:',
+          error
+        );
+      }
+    );
+
+    const unsubscribeVisit = subscribeToDocuments(
+      COLLECTIONS.VISIT_REQUESTS,
+      (documents) => {
+        /*
+         * The first snapshot establishes the existing
+         * requests. They should not trigger notifications.
+         */
+        if (!visitListenerReady) {
+          documents.forEach((document) => {
+            knownVisitRequestIds.add(document.id);
+          });
+
+          visitListenerReady = true;
+          setVisitRequests(documents);
+
+          return;
+        }
+
+        /*
+         * Find a genuinely new request.
+         */
+        const newlyAddedRequest = documents.find(
+          (document) =>
+            !knownVisitRequestIds.has(document.id)
+        );
+
+        /*
+         * Keep known IDs up to date.
+         */
+        documents.forEach((document) => {
+          knownVisitRequestIds.add(document.id);
+        });
+
+        setVisitRequests(documents);
+
+        if (newlyAddedRequest) {
+          setNewRequest({
+            type: 'Visit Request',
+            data: newlyAddedRequest,
+          });
+
+          showBrowserNotification(
+            'Visit Request',
+            newlyAddedRequest
+          );
+        }
+      },
+      (error) => {
+        console.error(
+          'Visit request real-time listener error:',
+          error
+        );
+      }
+    );
+
+    return () => {
+      unsubscribeCustom();
+      unsubscribeVisit();
+    };
+  }, []);
+
+
+  /*
+   * ========================================
+   * BROWSER NOTIFICATION
+   * ========================================
+   */
+
+  const showBrowserNotification = (
+    type,
+    request
+  ) => {
+    if (
+      !('Notification' in window) ||
+      Notification.permission !== 'granted'
+    ) {
+      return;
+    }
+
+    const notification = new Notification(
+      'Prema Tailoring & Design',
+      {
+        body: `New ${type} from ${
+          request.name || 'a customer'
+        }.`,
+        tag: `new-${request.id}`,
+      }
+    );
+
+    notification.onclick = () => {
+      window.focus();
+      notification.close();
+    };
+  };
+
+
+  /*
+   * ========================================
+   * ENABLE BROWSER NOTIFICATIONS
+   * ========================================
+   */
+
+  const enableBrowserNotifications = async () => {
+    if (!('Notification' in window)) {
+      return;
+    }
+
     try {
-      await logoutAdmin();
-      navigate('/admin/login');
+      const permission =
+        await Notification.requestPermission();
+
+      setBrowserNotificationPermission(permission);
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error(
+        'Browser notification permission error:',
+        error
+      );
     }
   };
+
+
+  /*
+   * ========================================
+   * DISMISS NOTIFICATION
+   * ========================================
+   */
+
+  const dismissNewRequest = () => {
+    setNewRequest(null);
+  };
+
+
+  /*
+   * ========================================
+   * UPDATE REQUEST STATUS
+   * ========================================
+   */
 
   const updateRequestStatus = async (
     collectionName,
     requestId,
-    status
+    newStatus
   ) => {
     try {
       setError('');
 
-      await updateDocument(collectionName, requestId, {
-        status,
-      });
+      await updateDocument(
+        collectionName,
+        requestId,
+        {
+          status: newStatus,
+        }
+      );
 
-      if (collectionName === COLLECTIONS.CUSTOM_DESIGN_REQUESTS) {
-        setCustomRequests((previous) =>
-          previous.map((request) =>
+      if (
+        collectionName ===
+        COLLECTIONS.CUSTOM_DESIGN_REQUESTS
+      ) {
+        setCustomRequests((currentRequests) =>
+          currentRequests.map((request) =>
             request.id === requestId
-              ? { ...request, status }
+              ? {
+                  ...request,
+                  status: newStatus,
+                }
               : request
           )
         );
       }
 
-      if (collectionName === COLLECTIONS.VISIT_REQUESTS) {
-        setVisitRequests((previous) =>
-          previous.map((request) =>
+      if (
+        collectionName === COLLECTIONS.VISIT_REQUESTS
+      ) {
+        setVisitRequests((currentRequests) =>
+          currentRequests.map((request) =>
             request.id === requestId
-              ? { ...request, status }
+              ? {
+                  ...request,
+                  status: newStatus,
+                }
               : request
           )
         );
       }
     } catch (error) {
-      console.error('Status update error:', error);
-      setError('Unable to update request status.');
+      console.error(
+        'Request status update error:',
+        error
+      );
+
+      setError(
+        'Unable to update the request status.'
+      );
     }
   };
+
+
+  /*
+   * ========================================
+   * DELETE COMPLETED REQUEST
+   * ========================================
+   */
 
   const deleteRequest = async (
     collectionName,
@@ -122,95 +384,355 @@ function AdminDashboard() {
     try {
       setError('');
 
-      await deleteDocument(collectionName, requestId);
+      await deleteDocument(
+        collectionName,
+        requestId
+      );
 
-      if (collectionName === COLLECTIONS.CUSTOM_DESIGN_REQUESTS) {
-        setCustomRequests((previous) =>
-          previous.filter(
+      if (
+        collectionName ===
+        COLLECTIONS.CUSTOM_DESIGN_REQUESTS
+      ) {
+        setCustomRequests((currentRequests) =>
+          currentRequests.filter(
             (request) => request.id !== requestId
           )
         );
       }
 
-      if (collectionName === COLLECTIONS.VISIT_REQUESTS) {
-        setVisitRequests((previous) =>
-          previous.filter(
+      if (
+        collectionName === COLLECTIONS.VISIT_REQUESTS
+      ) {
+        setVisitRequests((currentRequests) =>
+          currentRequests.filter(
             (request) => request.id !== requestId
           )
         );
       }
     } catch (error) {
-      console.error('Delete request error:', error);
-      setError('Unable to delete request.');
+      console.error(
+        'Request deletion error:',
+        error
+      );
+
+      setError(
+        'Unable to delete the request.'
+      );
     }
   };
 
-  const totalRequests =
-    customRequests.length + visitRequests.length;
 
-  const newRequests = useMemo(() => {
-    return [...customRequests, ...visitRequests].filter(
-      (request) => request.status === 'New'
-    ).length;
-  }, [customRequests, visitRequests]);
+  /*
+   * ========================================
+   * LOGOUT
+   * ========================================
+   */
 
-  const contactedRequests = useMemo(() => {
-    return [...customRequests, ...visitRequests].filter(
-      (request) => request.status === 'Contacted'
-    ).length;
-  }, [customRequests, visitRequests]);
+  const handleLogout = async () => {
+    try {
+      await logoutAdmin();
+      navigate('/admin/login');
+    } catch (error) {
+      console.error(
+        'Admin logout error:',
+        error
+      );
 
-  const completedRequests = useMemo(() => {
-    return [...customRequests, ...visitRequests].filter(
-      (request) => request.status === 'Completed'
-    ).length;
-  }, [customRequests, visitRequests]);
+      setError('Unable to log out.');
+    }
+  };
+
+
+  /*
+   * ========================================
+   * REQUEST COUNTS
+   * ========================================
+   */
+
+  const allRequests = [
+    ...customRequests,
+    ...visitRequests,
+  ];
+
+  const totalRequests = allRequests.length;
+
+  const newRequestsCount = allRequests.filter(
+    (request) => request.status === 'New'
+  ).length;
+
+  const contactedRequestsCount = allRequests.filter(
+    (request) => request.status === 'Contacted'
+  ).length;
+
+  const completedRequestsCount = allRequests.filter(
+    (request) => request.status === 'Completed'
+  ).length;
+
+
+  /*
+   * ========================================
+   * FORMAT DATE
+   * ========================================
+   */
+
+  const formatDate = (timestamp) => {
+    if (!timestamp) {
+      return 'Date unavailable';
+    }
+
+    try {
+      const date = timestamp.toDate
+        ? timestamp.toDate()
+        : new Date(timestamp);
+
+      return date.toLocaleString('en-IN', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      });
+    } catch {
+      return 'Date unavailable';
+    }
+  };
+
+
+  /*
+   * ========================================
+   * REQUEST CARD
+   * ========================================
+   */
+
+  const renderRequestCard = (
+    request,
+    collectionName,
+    type
+  ) => {
+    const status = request.status || 'New';
+
+    return (
+      <article
+        className="admin-request-card"
+        key={request.id}
+      >
+        <div className="admin-request-card-header">
+          <div>
+            <span className="admin-request-type">
+              {type}
+            </span>
+
+            <h3>{request.name}</h3>
+          </div>
+
+          <span
+            className={`admin-status admin-status-${status.toLowerCase()}`}
+          >
+            {status}
+          </span>
+        </div>
+
+        <div className="admin-request-details">
+          <p>
+            <strong>Phone:</strong>{' '}
+            {request.phone || 'Not provided'}
+          </p>
+
+          {type === 'Custom Design Request' && (
+            <>
+              <p>
+                <strong>Garment:</strong>{' '}
+                {request.garmentType ||
+                  'Not specified'}
+              </p>
+
+              <p>
+                <strong>Description:</strong>{' '}
+                {request.description ||
+                  'No description provided'}
+              </p>
+
+              {request.referenceImageUrl && (
+                <p>
+                  <strong>Reference image:</strong>{' '}
+                  <a
+                    href={request.referenceImageUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    View Image
+                  </a>
+                </p>
+              )}
+            </>
+          )}
+
+          {type === 'Visit Request' && (
+            <>
+              <p>
+                <strong>Service:</strong>{' '}
+                {request.service ||
+                  'Not specified'}
+              </p>
+
+              <p>
+                <strong>Preferred date:</strong>{' '}
+                {request.preferredDate ||
+                  'Not specified'}
+              </p>
+
+              <p>
+                <strong>Preferred time:</strong>{' '}
+                {request.preferredTime ||
+                  'Not specified'}
+              </p>
+
+              {request.message && (
+                <p>
+                  <strong>Message:</strong>{' '}
+                  {request.message}
+                </p>
+              )}
+            </>
+          )}
+
+          <p>
+            <strong>Received:</strong>{' '}
+            {formatDate(request.createdAt)}
+          </p>
+        </div>
+
+        <div className="admin-request-actions">
+          <a
+            href={`tel:${request.phone}`}
+            className="admin-action-button admin-call-button"
+          >
+            Call
+          </a>
+
+          <a
+            href={`https://wa.me/${String(
+              request.phone || ''
+            ).replace(/\D/g, '')}`}
+            target="_blank"
+            rel="noreferrer"
+            className="admin-action-button admin-whatsapp-button"
+          >
+            WhatsApp
+          </a>
+
+          {status === 'New' && (
+            <button
+              type="button"
+              className="admin-action-button admin-status-button"
+              onClick={() =>
+                updateRequestStatus(
+                  collectionName,
+                  request.id,
+                  'Contacted'
+                )
+              }
+            >
+              Mark Contacted
+            </button>
+          )}
+
+          {status === 'Contacted' && (
+            <button
+              type="button"
+              className="admin-action-button admin-status-button"
+              onClick={() =>
+                updateRequestStatus(
+                  collectionName,
+                  request.id,
+                  'Completed'
+                )
+              }
+            >
+              Mark Completed
+            </button>
+          )}
+
+          {status === 'Completed' && (
+            <button
+              type="button"
+              className="admin-action-button admin-delete-button"
+              onClick={() =>
+                deleteRequest(
+                  collectionName,
+                  request.id
+                )
+              }
+            >
+              Delete
+            </button>
+          )}
+        </div>
+      </article>
+    );
+  };
+
+
+  /*
+   * ========================================
+   * LOADING
+   * ========================================
+   */
 
   if (loading) {
     return (
       <main className="admin-page">
-        <section className="admin-container">
-          <div className="admin-loading">
-            <span className="admin-loading-spinner"></span>
-            <p>Loading dashboard...</p>
-          </div>
-        </section>
+        <div className="admin-loading">
+          <p>Loading admin dashboard...</p>
+        </div>
       </main>
     );
   }
 
+
+  /*
+   * ========================================
+   * DASHBOARD
+   * ========================================
+   */
+
   return (
     <main className="admin-page">
-      <section className="admin-container">
 
-        {/* HEADER */}
+      {/* ========================================
+          ADMIN HEADER
+      ======================================== */}
 
-        <header className="admin-header">
+      <header className="admin-header">
+        <div className="admin-header-content">
 
-          <div className="admin-header-content">
-
+          <div>
             <p className="admin-eyebrow">
               Prema Tailoring & Design
             </p>
 
             <h1>Admin Dashboard</h1>
-
-            <p className="admin-header-description">
-              Manage customer requests, appointments, and
-              gallery images.
-            </p>
-
           </div>
 
           <div className="admin-header-actions">
 
+            {browserNotificationPermission !== 'granted' &&
+              browserNotificationPermission !== 'denied' && (
+                <button
+                  type="button"
+                  className="admin-notification-button"
+                  onClick={enableBrowserNotifications}
+                >
+                  Enable Notifications
+                </button>
+              )}
+
             <button
               type="button"
-              className="admin-secondary-button"
+              className="admin-refresh-button"
               onClick={() => loadRequests(true)}
               disabled={refreshing}
             >
-              {refreshing ? 'Refreshing...' : 'Refresh'}
+              {refreshing
+                ? 'Refreshing...'
+                : 'Refresh'}
             </button>
 
             <button
@@ -222,20 +744,48 @@ function AdminDashboard() {
             </button>
 
           </div>
+        </div>
+      </header>
 
-        </header>
 
-        {/* ERROR */}
+      {/* ========================================
+          DASHBOARD CONTENT
+      ======================================== */}
 
-        {error && (
-          <div className="admin-error">
+      <div className="admin-container">
 
-            <span>{error}</span>
+        {/* ========================================
+            NEW REQUEST NOTIFICATION
+        ======================================== */}
+
+        {newRequest && (
+          <div className="admin-notification">
+
+            <div className="admin-notification-icon">
+              🔔
+            </div>
+
+            <div className="admin-notification-content">
+
+              <p className="admin-notification-label">
+                New Request
+              </p>
+
+              <h3>
+                {newRequest.type}
+              </h3>
+
+              <p>
+                {newRequest.data.name}
+              </p>
+
+            </div>
 
             <button
               type="button"
-              onClick={() => setError('')}
-              aria-label="Close error"
+              className="admin-notification-dismiss"
+              onClick={dismissNewRequest}
+              aria-label="Dismiss notification"
             >
               ×
             </button>
@@ -243,46 +793,83 @@ function AdminDashboard() {
           </div>
         )}
 
-        {/* STATISTICS */}
 
-        <div className="admin-stats">
+        {/* ========================================
+            ERROR
+        ======================================== */}
+
+        {error && (
+          <div className="admin-error">
+            <p>{error}</p>
+          </div>
+        )}
+
+
+        {/* ========================================
+            STATS
+        ======================================== */}
+
+        <section className="admin-stats">
 
           <div className="admin-stat-card">
-            <span>Total Requests</span>
-            <strong>{totalRequests}</strong>
+            <span className="admin-stat-label">
+              Total Requests
+            </span>
+
+            <strong className="admin-stat-value">
+              {totalRequests}
+            </strong>
           </div>
 
           <div className="admin-stat-card">
-            <span>New</span>
-            <strong>{newRequests}</strong>
+            <span className="admin-stat-label">
+              New
+            </span>
+
+            <strong className="admin-stat-value">
+              {newRequestsCount}
+            </strong>
           </div>
 
           <div className="admin-stat-card">
-            <span>Contacted</span>
-            <strong>{contactedRequests}</strong>
+            <span className="admin-stat-label">
+              Contacted
+            </span>
+
+            <strong className="admin-stat-value">
+              {contactedRequestsCount}
+            </strong>
           </div>
 
           <div className="admin-stat-card">
-            <span>Completed</span>
-            <strong>{completedRequests}</strong>
+            <span className="admin-stat-label">
+              Completed
+            </span>
+
+            <strong className="admin-stat-value">
+              {completedRequestsCount}
+            </strong>
           </div>
 
-        </div>
+        </section>
 
-        {/* CUSTOM DESIGN REQUESTS */}
+
+        {/* ========================================
+            CUSTOM DESIGN REQUESTS
+        ======================================== */}
 
         <section className="admin-section">
 
           <div className="admin-section-heading">
 
             <div>
-
               <p className="admin-eyebrow">
                 Customer Requests
               </p>
 
-              <h2>Custom Design Requests</h2>
-
+              <h2>
+                Custom Design Requests
+              </h2>
             </div>
 
             <span className="admin-count">
@@ -294,184 +881,48 @@ function AdminDashboard() {
           {customRequests.length === 0 ? (
             <div className="admin-empty">
 
-              <h3>No custom design requests</h3>
+              <h3>
+                No custom design requests
+              </h3>
 
               <p>
-                New custom design requests will appear here.
+                New customer requests will appear here.
               </p>
 
             </div>
           ) : (
             <div className="admin-request-grid">
 
-              {customRequests.map((request) => (
-
-                <article
-                  className="admin-request-card"
-                  key={request.id}
-                >
-
-                  {/* CARD HEADER */}
-
-                  <div className="admin-card-top">
-
-                    <div className="admin-card-title">
-
-                      <h3>{request.name}</h3>
-
-                      <span className="admin-request-type">
-                        Custom Design
-                      </span>
-
-                    </div>
-
-                    <span
-                      className={`admin-status admin-status-${(
-                        request.status || 'New'
-                      )
-                        .toLowerCase()
-                        .replace(/\s+/g, '-')}`}
-                    >
-                      {request.status || 'New'}
-                    </span>
-
-                  </div>
-
-                  {/* DETAILS */}
-
-                  <div className="admin-request-details">
-
-                    <p>
-                      <strong>Phone</strong>
-                      <span>{request.phone}</span>
-                    </p>
-
-                    <p>
-                      <strong>Garment</strong>
-                      <span>{request.garmentType}</span>
-                    </p>
-
-                    {request.description && (
-                      <p>
-                        <strong>Description</strong>
-                        <span>{request.description}</span>
-                      </p>
-                    )}
-
-                  </div>
-
-                  {/* REFERENCE IMAGE */}
-
-                  {request.referenceImageUrl && (
-                    <a
-                      className="admin-image-link"
-                      href={request.referenceImageUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      View Reference Image
-                    </a>
-                  )}
-
-                  {/* CONTACT ACTIONS */}
-
-                  <div className="admin-card-actions">
-
-                    <a
-                      className="admin-action-button"
-                      href={`tel:${request.phone}`}
-                    >
-                      Call
-                    </a>
-
-                    <a
-                      className="admin-action-button"
-                      href={`https://wa.me/${request.phone.replace(
-                        /\D/g,
-                        ''
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      WhatsApp
-                    </a>
-
-                  </div>
-
-                  {/* STATUS ACTIONS */}
-
-                  <div className="admin-status-actions">
-
-                    {request.status === 'New' && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          updateRequestStatus(
-                            COLLECTIONS.CUSTOM_DESIGN_REQUESTS,
-                            request.id,
-                            'Contacted'
-                          )
-                        }
-                      >
-                        Mark Contacted
-                      </button>
-                    )}
-
-                    {request.status === 'Contacted' && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          updateRequestStatus(
-                            COLLECTIONS.CUSTOM_DESIGN_REQUESTS,
-                            request.id,
-                            'Completed'
-                          )
-                        }
-                      >
-                        Mark Completed
-                      </button>
-                    )}
-
-                    {request.status === 'Completed' && (
-                      <button
-                        type="button"
-                        className="delete-button"
-                        onClick={() =>
-                          deleteRequest(
-                            COLLECTIONS.CUSTOM_DESIGN_REQUESTS,
-                            request.id
-                          )
-                        }
-                      >
-                        Delete
-                      </button>
-                    )}
-
-                  </div>
-
-                </article>
-
-              ))}
+              {customRequests.map((request) =>
+                renderRequestCard(
+                  request,
+                  COLLECTIONS.CUSTOM_DESIGN_REQUESTS,
+                  'Custom Design Request'
+                )
+              )}
 
             </div>
           )}
 
         </section>
 
-        {/* VISIT REQUESTS */}
+
+        {/* ========================================
+            VISIT REQUESTS
+        ======================================== */}
 
         <section className="admin-section">
 
           <div className="admin-section-heading">
 
             <div>
-
               <p className="admin-eyebrow">
-                Appointments
+                Appointment Requests
               </p>
 
-              <h2>Visit Requests</h2>
-
+              <h2>
+                Visit Requests
+              </h2>
             </div>
 
             <span className="admin-count">
@@ -483,175 +934,44 @@ function AdminDashboard() {
           {visitRequests.length === 0 ? (
             <div className="admin-empty">
 
-              <h3>No visit requests</h3>
+              <h3>
+                No visit requests
+              </h3>
 
               <p>
-                New appointment requests will appear here.
+                New visit requests will appear here.
               </p>
 
             </div>
           ) : (
             <div className="admin-request-grid">
 
-              {visitRequests.map((request) => (
-
-                <article
-                  className="admin-request-card"
-                  key={request.id}
-                >
-
-                  {/* CARD HEADER */}
-
-                  <div className="admin-card-top">
-
-                    <div className="admin-card-title">
-
-                      <h3>{request.name}</h3>
-
-                      <span className="admin-request-type">
-                        Visit Request
-                      </span>
-
-                    </div>
-
-                    <span
-                      className={`admin-status admin-status-${(
-                        request.status || 'New'
-                      )
-                        .toLowerCase()
-                        .replace(/\s+/g, '-')}`}
-                    >
-                      {request.status || 'New'}
-                    </span>
-
-                  </div>
-
-                  {/* DETAILS */}
-
-                  <div className="admin-request-details">
-
-                    <p>
-                      <strong>Phone</strong>
-                      <span>{request.phone}</span>
-                    </p>
-
-                    <p>
-                      <strong>Service</strong>
-                      <span>{request.service}</span>
-                    </p>
-
-                    <p>
-                      <strong>Preferred Date</strong>
-                      <span>{request.preferredDate}</span>
-                    </p>
-
-                    <p>
-                      <strong>Preferred Time</strong>
-                      <span>{request.preferredTime}</span>
-                    </p>
-
-                    {request.message && (
-                      <p>
-                        <strong>Message</strong>
-                        <span>{request.message}</span>
-                      </p>
-                    )}
-
-                  </div>
-
-                  {/* CONTACT ACTIONS */}
-
-                  <div className="admin-card-actions">
-
-                    <a
-                      className="admin-action-button"
-                      href={`tel:${request.phone}`}
-                    >
-                      Call
-                    </a>
-
-                    <a
-                      className="admin-action-button"
-                      href={`https://wa.me/${request.phone.replace(
-                        /\D/g,
-                        ''
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      WhatsApp
-                    </a>
-
-                  </div>
-
-                  {/* STATUS ACTIONS */}
-
-                  <div className="admin-status-actions">
-
-                    {request.status === 'New' && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          updateRequestStatus(
-                            COLLECTIONS.VISIT_REQUESTS,
-                            request.id,
-                            'Contacted'
-                          )
-                        }
-                      >
-                        Mark Contacted
-                      </button>
-                    )}
-
-                    {request.status === 'Contacted' && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          updateRequestStatus(
-                            COLLECTIONS.VISIT_REQUESTS,
-                            request.id,
-                            'Completed'
-                          )
-                        }
-                      >
-                        Mark Completed
-                      </button>
-                    )}
-
-                    {request.status === 'Completed' && (
-                      <button
-                        type="button"
-                        className="delete-button"
-                        onClick={() =>
-                          deleteRequest(
-                            COLLECTIONS.VISIT_REQUESTS,
-                            request.id
-                          )
-                        }
-                      >
-                        Delete
-                      </button>
-                    )}
-
-                  </div>
-
-                </article>
-
-              ))}
+              {visitRequests.map((request) =>
+                renderRequestCard(
+                  request,
+                  COLLECTIONS.VISIT_REQUESTS,
+                  'Visit Request'
+                )
+              )}
 
             </div>
           )}
 
         </section>
 
-        {/* GALLERY MANAGEMENT */}
+
+        {/* ========================================
+            GALLERY
+        ======================================== */}
 
         <AdminGallery
           galleryItems={galleryItems}
-          onGalleryChange={() => loadRequests(true)}
+          onGalleryChange={() =>
+            loadRequests(true)
+          }
         />
 
-      </section>
+      </div>
     </main>
   );
 }

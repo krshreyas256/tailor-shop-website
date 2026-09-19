@@ -9,6 +9,7 @@ import {
   serverTimestamp,
   query,
   orderBy,
+  onSnapshot,
 } from 'firebase/firestore';
 
 import app from './config';
@@ -54,6 +55,41 @@ export const getDocuments = async (collectionName) => {
     id: document.id,
     ...document.data(),
   }));
+};
+
+export const subscribeToDocuments = (
+  collectionName,
+  callback,
+  onError
+) => {
+  const collectionRef = collection(db, collectionName);
+
+  const documentsQuery = query(
+    collectionRef,
+    orderBy('createdAt', 'desc')
+  );
+
+  return onSnapshot(
+    documentsQuery,
+    (snapshot) => {
+      const documents = snapshot.docs.map((document) => ({
+        id: document.id,
+        ...document.data(),
+      }));
+
+      callback(documents, snapshot);
+    },
+    (error) => {
+      console.error(
+        `Real-time listener error (${collectionName}):`,
+        error
+      );
+
+      if (onError) {
+        onError(error);
+      }
+    }
+  );
 };
 
 /* =========================

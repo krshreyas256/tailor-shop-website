@@ -6,6 +6,8 @@ import {
   COLLECTIONS,
 } from '../firebase/firestore';
 
+import { uploadImage } from '../cloudinary/upload';
+
 function CustomDesign() {
   const [formData, setFormData] = useState({
     name: '',
@@ -30,6 +32,7 @@ function CustomDesign() {
     setErrors((prev) => ({
       ...prev,
       [name]: '',
+      submit: '',
     }));
 
     setSubmitted(false);
@@ -68,11 +71,18 @@ function CustomDesign() {
     setSubmitted(false);
 
     try {
+      let referenceImageUrl = '';
+
+      if (formData.referenceImage) {
+        referenceImageUrl = await uploadImage(formData.referenceImage);
+      }
+
       await addDocument(COLLECTIONS.CUSTOM_DESIGN_REQUESTS, {
         name: formData.name.trim(),
         phone: formData.phone.trim(),
         garmentType: formData.garmentType,
         description: formData.description.trim(),
+        referenceImageUrl,
         status: 'New',
       });
 

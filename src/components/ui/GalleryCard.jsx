@@ -1,21 +1,21 @@
+import '../../styles/gallery.css';
+
 function GalleryCard({ image, title }) {
   return (
     <article className="gallery-card">
-      <button
-        type="button"
-        className="gallery-image-button"
-        aria-label={`View ${title}`}
-      >
+      <div className="gallery-image-wrapper">
+
         <img
           src={image}
           alt={title}
-          className="gallery-image"
+          loading="lazy"
         />
 
-        <div className="gallery-overlay">
-          <span>{title}</span>
+        <div className="gallery-card-overlay">
+          <h3>{title}</h3>
         </div>
-      </button>
+
+      </div>
     </article>
   );
 }

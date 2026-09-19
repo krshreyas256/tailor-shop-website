@@ -21,8 +21,21 @@ function Header() {
     <header className="header">
       <div className="header-container">
 
-        <a href="#home" className="logo">
-          Prema Tailoring & Design
+        <a
+          href="#home"
+          className="logo"
+          aria-label="Prema Tailoring & Design"
+        >
+          <span className="logo-mark">
+            <img
+              src="/logo.png"
+              alt=""
+            />
+          </span>
+
+          <span className="logo-text">
+            Prema Tailoring & Design
+          </span>
         </a>
 
         <nav className={`nav ${menuOpen ? 'nav-open' : ''}`}>
@@ -38,6 +51,7 @@ function Header() {
         </nav>
 
         <button
+          type="button"
           className={`menu-toggle ${menuOpen ? 'active' : ''}`}
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle navigation menu"

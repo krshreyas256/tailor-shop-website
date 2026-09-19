@@ -257,7 +257,6 @@
    HEADER BUTTONS
 ======================================== */
 
-.admin-refresh-button,
 .admin-logout-button {
   min-height: 40px;
 
@@ -278,17 +277,6 @@
     opacity 0.2s ease;
 }
 
-.admin-refresh-button {
-  border: 1px solid #cdbba8;
-
-  background: #ffffff;
-  color: #5f4937;
-}
-
-.admin-refresh-button:hover:not(:disabled) {
-  border-color: #9a6a3a;
-  background: #faf7f2;
-}
 
 .admin-logout-button {
   border: 1px solid #82562e;
@@ -302,10 +290,6 @@
   background: #82562e;
 }
 
-.admin-refresh-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
 
 
 /* ========================================
@@ -1100,7 +1084,6 @@
     width: 100%;
   }
 
-  .admin-refresh-button,
   .admin-logout-button {
     flex: 1;
   }
@@ -1307,7 +1290,6 @@
 @media (prefers-reduced-motion: reduce) {
   .admin-login-form input,
   .admin-login-button,
-  .admin-refresh-button,
   .admin-logout-button,
   .admin-notification-dismiss,
   .admin-action-button,

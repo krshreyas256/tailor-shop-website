@@ -22,7 +22,6 @@ function AdminDashboard() {
   const [galleryItems, setGalleryItems] = useState([]);
 
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
 
   const [newRequest, setNewRequest] = useState(null);
@@ -37,14 +36,9 @@ function AdminDashboard() {
    * ========================================
    */
 
-  const loadRequests = async (isRefresh = false) => {
+  const loadRequests = async () => {
     try {
-      if (isRefresh) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
-
+      setLoading(true);
       setError('');
 
       const [
@@ -65,7 +59,19 @@ function AdminDashboard() {
       setError('Unable to load dashboard data.');
     } finally {
       setLoading(false);
-      setRefreshing(false);
+    }
+  };
+
+  const refreshGallery = async () => {
+    try {
+      const galleryDocuments = await getDocuments(
+        COLLECTIONS.GALLERY
+      );
+
+      setGalleryItems(galleryDocuments);
+    } catch (error) {
+      console.error('Gallery loading error:', error);
+      setError('Unable to load gallery data.');
     }
   };
 
@@ -96,6 +102,41 @@ function AdminDashboard() {
       Notification.permission
     );
   }, []);
+
+
+  /*
+   * ========================================
+   * BROWSER NOTIFICATION
+   * ========================================
+   */
+
+  const showBrowserNotification = (
+    type,
+    request
+  ) => {
+    if (
+      !('Notification' in window) ||
+      Notification.permission !== 'granted'
+    ) {
+      return;
+    }
+
+    const notification = new Notification(
+      'Prema Tailoring & Design',
+      {
+        body: `New ${type} from ${
+          request.name || 'a customer'
+        }.`,
+        tag: `new-${request.id}`,
+      }
+    );
+
+    notification.onclick = () => {
+      window.focus();
+      notification.close();
+    };
+  };
+
 
 
   /*
@@ -226,40 +267,6 @@ function AdminDashboard() {
       unsubscribeVisit();
     };
   }, []);
-
-
-  /*
-   * ========================================
-   * BROWSER NOTIFICATION
-   * ========================================
-   */
-
-  const showBrowserNotification = (
-    type,
-    request
-  ) => {
-    if (
-      !('Notification' in window) ||
-      Notification.permission !== 'granted'
-    ) {
-      return;
-    }
-
-    const notification = new Notification(
-      'Prema Tailoring & Design',
-      {
-        body: `New ${type} from ${
-          request.name || 'a customer'
-        }.`,
-        tag: `new-${request.id}`,
-      }
-    );
-
-    notification.onclick = () => {
-      window.focus();
-      notification.close();
-    };
-  };
 
 
   /*
@@ -726,17 +733,6 @@ function AdminDashboard() {
 
             <button
               type="button"
-              className="admin-refresh-button"
-              onClick={() => loadRequests(true)}
-              disabled={refreshing}
-            >
-              {refreshing
-                ? 'Refreshing...'
-                : 'Refresh'}
-            </button>
-
-            <button
-              type="button"
               className="admin-logout-button"
               onClick={handleLogout}
             >
@@ -966,9 +962,7 @@ function AdminDashboard() {
 
         <AdminGallery
           galleryItems={galleryItems}
-          onGalleryChange={() =>
-            loadRequests(true)
-          }
+          onGalleryChange={refreshGallery}
         />
 
       </div>

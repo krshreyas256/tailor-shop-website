@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { loginAdmin } from '../firebase/auth';
 
+import '../styles/admin.css';
+
 function AdminLogin() {
   const navigate = useNavigate();
 
@@ -30,40 +32,71 @@ function AdminLogin() {
   };
 
   return (
-    <main>
-      <section>
-        <h1>Admin Login</h1>
+    <main className="admin-login-page">
+      <section className="admin-login-card">
+        <div className="admin-login-header">
+          <p className="admin-eyebrow">Prema Tailoring & Design</p>
 
-        <form onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="admin-email">Email</label>
+          <h1>Admin Login</h1>
+
+          <p className="admin-login-description">
+            Sign in to manage your website requests and gallery.
+          </p>
+        </div>
+
+        <form
+          className="admin-login-form"
+          onSubmit={handleSubmit}
+        >
+          <div className="admin-form-group">
+            <label htmlFor="admin-email">
+              Email
+            </label>
 
             <input
               id="admin-email"
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) =>
+                setEmail(event.target.value)
+              }
               placeholder="Enter admin email"
+              autoComplete="email"
               required
+              disabled={loading}
             />
           </div>
 
-          <div>
-            <label htmlFor="admin-password">Password</label>
+          <div className="admin-form-group">
+            <label htmlFor="admin-password">
+              Password
+            </label>
 
             <input
               id="admin-password"
               type="password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(event) =>
+                setPassword(event.target.value)
+              }
               placeholder="Enter password"
+              autoComplete="current-password"
               required
+              disabled={loading}
             />
           </div>
 
-          {error && <p>{error}</p>}
+          {error && (
+            <p className="admin-login-error">
+              {error}
+            </p>
+          )}
 
-          <button type="submit" disabled={loading}>
+          <button
+            type="submit"
+            className="admin-login-button"
+            disabled={loading}
+          >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
